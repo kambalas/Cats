@@ -2,6 +2,7 @@ package com.example.cat.api.controller;
 
 import com.example.cat.api.model.Cat;
 import com.example.cat.repository.CatRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,7 @@ public class CatController {
   private CatRepository catRepository;
 
   @PostMapping
-  public void createCat(@RequestBody Cat cat) {
+  public void createCat( @Valid @RequestBody Cat cat) {
     catRepository.save(cat);
   }
   @GetMapping
@@ -33,7 +34,7 @@ public class CatController {
     return catRepository.findById(id).orElse(null);
   }
   @PutMapping("/{id}")
-  public void updateCat(@PathVariable long id, @RequestBody Cat cat) {
+  public void updateCat(@PathVariable long id, @Valid @RequestBody Cat cat) {
     catRepository.save(cat);
   }
   @DeleteMapping("/{id}")

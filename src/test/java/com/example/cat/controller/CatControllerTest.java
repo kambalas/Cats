@@ -36,7 +36,7 @@ public class CatControllerTest {
   public void setup() {
     cat = new Cat();
     cat.setId(1L);
-    cat.setName("Whiskers");
+    cat.setName("");
     cat.setBreed("Tabby");
     cat.setAge(3);
     cat.setColor("Brown");
