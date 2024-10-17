@@ -4,6 +4,9 @@ import com.example.cat.api.model.Cat;
 import com.example.cat.repository.CatRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,8 +29,8 @@ public class CatController {
     catRepository.save(cat);
   }
   @GetMapping
-  public List<Cat> getCats() {
-    return catRepository.findAll();
+  public Page<Cat> getCats(@PageableDefault(size = 5) Pageable pageable) {
+    return catRepository.findAll(pageable);
   }
   @GetMapping("/{id}")
   public Cat getCatById(@PathVariable long id) {
