@@ -35,6 +35,7 @@ public class CatController {
   }
   @PutMapping("/{id}")
   public void updateCat(@PathVariable long id, @Valid @RequestBody Cat cat) {
+    cat.setId(id);
     catRepository.save(cat);
   }
   @DeleteMapping("/{id}")
