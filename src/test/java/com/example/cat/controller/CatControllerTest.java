@@ -1,112 +1,87 @@
-
 package com.example.cat.controller;
 
+import com.example.cat.api.controller.CatController;
 import com.example.cat.api.model.Cat;
 import com.example.cat.repository.CatRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@WithMockUser(username = "user", password = "password", roles = "USER")
 public class CatControllerTest {
 
-  @Autowired
-  private MockMvc mockMvc;
-
-  @MockBean
+  @Mock
   private CatRepository catRepository;
+
+  @InjectMocks
+  private CatController catController;
 
   private Cat cat;
 
   @BeforeEach
   public void setup() {
+    MockitoAnnotations.openMocks(this);
     cat = new Cat();
     cat.setId(1L);
     cat.setName("Kate");
     cat.setBreed("Laukine");
     cat.setAge(3);
     cat.setColor("Juoda");
-    cat.setDateOfBirth(new java.util.Date());
   }
 
   @Test
-  public void testCreateCat() throws Exception {
+  public void testCreateCat() {
     Mockito.when(catRepository.save(any(Cat.class))).thenReturn(cat);
-
-    mockMvc.perform(post("/cats")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(asJsonString(cat)))
-            .andExpect(status().isOk());
+    catController.createCat(cat);
+    Mockito.verify(catRepository).save(cat);
   }
 
   @Test
-  public void testGetCats() throws Exception {
+  public void testGetCats() {
     Pageable pageable = PageRequest.of(0, 5);
     List<Cat> cats = Arrays.asList(cat);
     Page<Cat> catPage = new PageImpl<>(cats, pageable, cats.size());
-
-    Mockito.when(catRepository.findAll(Mockito.any(Pageable.class))).thenReturn(catPage);
-
-    mockMvc.perform(get("/cats"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content[0].name").value("Kate"));
+    Mockito.when(catRepository.findAll(pageable)).thenReturn(catPage);
+    Page<Cat> result = catController.getCats(pageable);
+    assertEquals(1, result.getContent().size());
+    assertEquals("Kate", result.getContent().get(0).getName());
   }
+
   @Test
-  public void testGetCatById() throws Exception {
+  public void testGetCatById() {
     Mockito.when(catRepository.findById(1L)).thenReturn(Optional.of(cat));
-
-    mockMvc.perform(get("/cats/1"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.name").value("Kate"));
+    Cat result = catController.getCatById(1L);
+    assertNotNull(result);
+    assertEquals("Kate", result.getName());
   }
 
   @Test
-  public void testUpdateCat() throws Exception {
+  public void testUpdateCat() {
     Mockito.when(catRepository.findById(1L)).thenReturn(Optional.of(cat));
     Mockito.when(catRepository.save(any(Cat.class))).thenReturn(cat);
-
-    cat.setName("Mittens");
-
-    mockMvc.perform(put("/cats/1")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(asJsonString(cat)))
-            .andExpect(status().isOk());
+    cat.setName("Kaciuks");
+    catController.updateCat(1L, cat);
+    Mockito.verify(catRepository).save(cat);
+    assertEquals("Kacius", cat.getName());
   }
 
   @Test
-  public void testDeleteCat() throws Exception {
+  public void testDeleteCat() {
     Mockito.when(catRepository.findById(1L)).thenReturn(Optional.of(cat));
-
-    mockMvc.perform(delete("/cats/1"))
-            .andExpect(status().isOk());
-  }
-
-  private static String asJsonString(final Object obj) {
-    try {
-      return new ObjectMapper().writeValueAsString(obj);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    catController.deleteCat(1L);
+    Mockito.verify(catRepository).deleteById(1L);
   }
 }
